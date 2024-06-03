@@ -12,9 +12,11 @@
   </head>
   <body>
     <div id="app">
+      <n-loading-bar-provider>
       <n-message-provider>
         <router-view></router-view>
       </n-message-provider>
+      </n-loading-bar-provider>
     </div>
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->

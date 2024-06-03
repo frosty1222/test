@@ -2,7 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import AdminVue from '../../layouts/Admin.vue'
 import axios from 'axios'
-import { NTable, NPagination,NButton,NInput, useMessage,NModal } from 'naive-ui'
+import { NTable, NPagination,NButton,NInput, useMessage,NModal, useLoadingBar } from 'naive-ui'
 // Reactive variables
 const baseUrl = `http://127.0.0.1:8000/api/category/`
 const data = ref([])
@@ -13,6 +13,7 @@ const size = ref('medium')
 const title = ref('Add new category')
 const isEdit = ref(false)
 const showModalForm = ref(false)
+const loadingBar = useLoadingBar()
 const formValue = ref(
   {
     name:"",
@@ -57,13 +58,14 @@ const collectId = (value,item)=>{
   } else {
     id.value = id.value.filter(id => id !== item.id);
   }
-  console.log('====================================');
-  console.log(id.value);
-  console.log('====================================');
 }
 
 const submitCallback = async() => {
   showModal.value = false;
+  if(id.value.length === 0){
+    message.warning('please select at least one category id');
+    return;
+  }
   const response = await axios.delete(baseUrl + 'delete-category', {
       data: { id: id.value }
   });
@@ -90,6 +92,7 @@ const fetchData = async (search) => {
     let dataResponse = response?.data.data;
     data.value = dataResponse.categories.data;
     total.value = dataResponse.categories.data.total;
+    loadingBar.finish();
   } catch (error) {
     console.error('Error fetching data:', error)
   }
@@ -103,6 +106,7 @@ const handlePageSizeChange = (newPageSize) => {
 const handleSearch = (event)=>{
   let value = event;
   if(value){
+    loadingBar.start();
     fetchData(value)
   }else{
     fetchData('')

@@ -2,7 +2,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import AdminVue from '../../layouts/Admin.vue'
 import axios from 'axios'
-import { useMessage } from 'naive-ui'
+import { useLoadingBar, useMessage } from 'naive-ui'
 
 // Reactive variables
 const data = ref([])
@@ -21,6 +21,7 @@ const title = ref('Add new category')
 const isEdit = ref(false)
 const showModalForm = ref(false)
 const optionCate= ref([])
+const loadingBar = useLoadingBar()
 const formValue = ref(
   {
     name:"",
@@ -83,13 +84,14 @@ const collectId = (value,item)=>{
   } else {
     id.value = id.value.filter(id => id !== item.id);
   }
-  console.log('====================================');
-  console.log(id.value);
-  console.log('====================================');
 }
 
 const submitCallback = async() => {
   showModal.value = false;
+  if(id.value.length === 0){
+    message.warning('please select at least one product id');
+    return;
+  }
   const response = await axios.delete(baseUrl + 'delete-product', {
       data: { id: id.value }
   });
@@ -119,6 +121,7 @@ const fetchData = async (search) => {
       const dataResponse = response?.data
       data.value = dataResponse?.data.products.data
       total.value = dataResponse?.data.products.total
+      loadingBar.finish()
     }
   } catch (error) {
     console.error('Error fetching data:', error)
@@ -162,6 +165,7 @@ const refreshData = () => {
 const handleSearch = (event)=>{
   let value = event;
   if(value){
+    loadingBar.start()
     fetchData(value)
   }else{
     fetchData('')
@@ -213,6 +217,9 @@ onMounted(() => {
 
 <template>
   <AdminVue>
+    <n-spin :show="isLoading">
+      
+    </n-spin>
     <div class="header-section">
       <div class="left-icon">
           <n-button strong secondary type="primary" @click="addNewProduct"><i class="bi bi-plus"></i></n-button>

@@ -15,6 +15,7 @@ import {
     NModal,
     NSelect,
     NSpace,
+    NLoadingBarProvider,
 } from "naive-ui";
 const naive = create({
     components: [
@@ -29,7 +30,8 @@ const naive = create({
         NInput,
         NModal,
         NSelect,
-        NSpace
+        NSpace,
+        NLoadingBarProvider
     ],
 });
 const app = createApp({});
