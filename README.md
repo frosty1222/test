@@ -10,8 +10,9 @@
 ## Installation Steps
 
 1. **Install Laravel Dependencies**
+   -run command `get checkout origin dev`
    -make a file in the root of the project named .env then copy all content from file .env.example into .env
-   -first run `composer install` then run `php artisan migrate` this must be run after connected to a database.the database name is `aws_products`.
+   -next run `composer install` then run `php artisan migrate` this must be run after connected to a database.the database name is `aws_products`.
 -> make sure mysql server is running on your computer.
 -> to connect to a database in laravel go to .env find this code 
    `DB_CONNECTION=mysql
