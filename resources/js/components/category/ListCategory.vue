@@ -2,27 +2,89 @@
 import { ref, computed, onMounted } from 'vue'
 import AdminVue from '../../layouts/Admin.vue'
 import axios from 'axios'
-import { NTable, NPagination,NButton } from 'naive-ui'
+import { NTable, NPagination,NButton,NInput, useMessage,NModal } from 'naive-ui'
 // Reactive variables
-const count = ref(0)
+const baseUrl = `http://127.0.0.1:8000/api/category/`
 const data = ref([])
-const columns = ref([
+const search = ref("")
+const id = ref([])
+const formRef = ref(null);
+const size = ref('medium')
+const title = ref('Add new category')
+const isEdit = ref(false)
+const showModalForm = ref(false)
+const formValue = ref(
   {
-    title: 'Name',
-    key: 'name'
+    name:"",
+    id:null
   }
-])
+);
+const rules = ({
+  name: [
+    {
+      required: true,
+      message: 'Name is required',
+      trigger: 'blur'
+    }
+  ],
+  id:{required:false}
+})
 const page = ref(1)
 const pageSize = ref(5)
 const total = ref(0)
-const baseUrl = `http://127.0.0.1:8000/api/category/`
+const showModal = ref(false)
+const message = useMessage();
+const addNewCategory = ()=>{
+  showModalForm.value = true
+}
+const editCategory = (data)=>{
+  showModalForm.value = true
+  isEdit.value = true;
+  formValue.value = {
+    name:data.name,
+    id:data.id
+  }
+}
+const cancelCallback = () => {
+  showModal.value = false;
+  message.success('Cancelled')
+}
+const collectId = (value,item)=>{
+  if (value === true) {
+    if (!id.value.includes(item.id)) {
+      id.value.push(item.id);
+    }
+  } else {
+    id.value = id.value.filter(id => id !== item.id);
+  }
+  console.log('====================================');
+  console.log(id.value);
+  console.log('====================================');
+}
+
+const submitCallback = async() => {
+  showModal.value = false;
+  const response = await axios.delete(baseUrl + 'delete-category', {
+      data: { id: id.value }
+  });
+  if(response.data.status === "success"){
+    message.success(response.data.message)
+    showModalForm.value = false
+    id.value = []
+    fetchData('')
+  }else{
+    message.warning(response.data.message)
+  }
+
+}
 // Methods
-const fetchData = async () => {
+const fetchData = async (search) => {
   try {
     const response = await axios.get(baseUrl + 'get-category-list', {
       params: {
         page: page.value,
-        pageSize: pageSize.value
+        pageSize: pageSize.value,
+        search:search
       }
     })
     let dataResponse = response?.data.data;
@@ -36,13 +98,52 @@ const fetchData = async () => {
 const handlePageSizeChange = (newPageSize) => {
   pageSize.value = newPageSize
   page.value = 1 // Reset to first page on page size change
-  fetchData()
+  fetchData('')
 }
-
-const refreshData = () => {
-  fetchData()
+const handleSearch = (event)=>{
+  let value = event;
+  if(value){
+    fetchData(value)
+  }else{
+    fetchData('')
+  }
 }
-
+const handleDeleCate = ()=>{
+  showModal.value = true
+}
+const handleSubmit = async ()=>{
+   try {
+    await formRef.value.validate()
+    if(isEdit.value === false){
+      const response = await axios.post(baseUrl + 'create-category', formValue.value)
+      if(response.data.status === "success"){
+        let messages = response.data.message;
+        message.success(messages)
+        fetchData('')
+        showModalForm.value = false
+      }else{
+        let messages = response.data.message;
+        message.warning(messages)
+      }
+    }else if(isEdit.value === true){
+      const response = await axios.post(baseUrl + 'edit-category', formValue.value)
+      if(response.data.status === "success"){
+        let messages = response.data.message;
+        message.success(messages)
+        fetchData('')
+        showModalForm.value = false
+      }else{
+        let messages = response.data.message;
+        message.warning(messages)
+      }
+    }
+    formValue.value = {}
+   } catch (error) {
+     console.log('====================================');
+     console.log(error);
+     console.log('====================================');
+   }
+}
 // Computed property for paginated data
 const paginatedData = computed(() => {
   const start = (page.value - 1) * pageSize.value
@@ -52,14 +153,23 @@ const paginatedData = computed(() => {
 
 // Fetch data when the component is mounted
 onMounted(() => {
-  fetchData()
+  fetchData('')
 })
 </script>
 
 <template>
   <AdminVue>
+    <div class="header-section">
+      <div class="left-icon">
+          <n-button strong secondary type="primary" @click="addNewCategory"><i class="bi bi-plus"></i></n-button>
+          <n-button strong secondary type="error" @click="handleDeleCate"><i class="bi bi-trash"></i></n-button>
+      </div>
+      <div class="right-search">
+        <n-input v-model:value="search" @change="handleSearch($event)" type="text" placeholder="Search by name" />
+      </div>
+    </div>
     <div>
-      <n-table bottom-bordered="true" single-column="false" :single-line="true" bordered="true" striped="true">
+      <n-table  :single-column="false" :single-line="true" :bordered="true" :striped="true">
         <thead>
             <tr>
                 <th>No.</th>
@@ -71,11 +181,13 @@ onMounted(() => {
         <tbody>
             <tr v-for="(item, index) in data" :key="index">
             <td>{{ index + 1 }}</td>
-            <td><input type="checkbox" /></td>
+            <td>
+              <input type="checkbox" @change="collectId($event.target.checked,item)">
+            </td>
             <td>{{ item.name }}</td>
             <td>
-                <n-button strong secondary type="warning">
-                    <i class="bi bi-trash"></i>
+                <n-button strong secondary type="warning" @click="editCategory(item)">
+                    <i class="bi bi-pencil"></i>
                 </n-button>
             </td>
           </tr>
@@ -89,11 +201,61 @@ onMounted(() => {
         @update:page="fetchData"
         @update:page-size="handlePageSizeChange"
       />
-
+      <n-modal
+        v-model:show="showModal"
+        preset="dialog"
+        title="Confirm"
+        content="Are you sure?"
+        positive-text="Submit"
+        negative-text="Cancel"
+        @positive-click="submitCallback"
+        @negative-click="cancelCallback"
+      />
     </div>
+    <n-modal v-model:show="showModalForm">
+      <n-card
+        style="width: 600px"
+        :title="title"
+        :bordered="false"
+        size="huge"
+        role="dialog"
+        aria-modal="true"
+      >
+        <n-form
+          ref="formRef"
+          inline
+          :label-width="80"
+          :model="formValue"
+          :rules="rules"
+          :size="size"
+        >
+        <n-input type="hidden" v-model:value="formValue.id"></n-input>
+        <div class="form-group">
+          <n-form-item label="Name" path="name">
+            <n-input v-model:value="formValue.name" placeholder="Input Name Category" required />
+          </n-form-item>
+        </div>
+          <div class="form-group">
+            <n-button type="primary" native-type="button" @click="handleSubmit">Save</n-button>
+          </div>
+        </n-form>
+      </n-card>
+    </n-modal>
   </AdminVue>
 </template>
 
 <style lang="scss" scoped>
-
+    .header-section{
+      display:flex;
+      justify-content: right;
+      column-gap: 20px;
+      .left-icon{
+        display: flex;
+        justify-content: center;
+        column-gap: 10px;
+      }
+    }
+  .n-form.n-form--inline{
+     display: block !important;
+  }
 </style>

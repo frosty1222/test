@@ -219,6 +219,7 @@ $backgroundBody:#151a30;
                         height: 92px;
                         border-radius: 5px;
                         right: 0px;
+                        z-index: 100000;
                         ul{
                             padding: 0px;
                             li{
@@ -231,14 +232,13 @@ $backgroundBody:#151a30;
                                 color: #000;
                                 cursor: pointer;
                                 &:hover{
-                                    background-color: #000;
+                                    background-color: orange;
                                     color: #fff;
                                 }
                                 button{
                                     border: none;
                                     background-color: transparent;
                                     &:hover{
-                                        background-color: #000;
                                         color: #fff;
                                     }
                                 }

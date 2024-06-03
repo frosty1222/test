@@ -15,7 +15,7 @@ class CategoryService
     public function getAll($request){
         $data = [];
        if($request->filled('search')){
-           $data = $this->category->getAll($request->filled('search'));
+           $data = $this->category->getAll($request->search);
        }else{
         $data = $this->category->getAll();
        }
@@ -36,10 +36,10 @@ class CategoryService
         return $create;
     }
     public function deleteCate($request){
-        if(!is_array($request->id) || count($request->id)){
+        if(!is_array($request->id) || count($request->id) === 0){
             return false;
         }
-        $delete = $this->category->deleteRecord($request);
+        $delete = $this->category->deleteRecord($request->id);
         return $delete;
     }
     public function checkName($request){

@@ -20,17 +20,20 @@ const routes = [
   {
     path:'/admin',
     name:'admin',
-    component:AdminVue
+    component:AdminVue,
+    meta: { requiresAuth: true }
   },
   {
     path:'/category',
     name:'category list',
-    component:ListCategory
+    component:ListCategory,
+    meta: { requiresAuth: true }
   },
   {
     path:'/product',
     name:'product list',
-    component:ListProduct
+    component:ListProduct,
+    meta: { requiresAuth: true }
   }
 ];
 
@@ -38,6 +41,18 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes
+});
+router.beforeEach((to, from, next) => {
+  if (to.matched.some(record => record.meta.requiresAuth)) {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      next({ path: '/' });
+    } else {
+      next();
+    }
+  } else {
+    next();
+  }
 });
 
 export default router;

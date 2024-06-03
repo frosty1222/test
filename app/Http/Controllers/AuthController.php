@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\CustomResponse;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -18,22 +19,32 @@ class AuthController extends Controller
         $credentials = $request->only('email', 'password');
 
         if (Auth::attempt($credentials, $request->remember)) {
-            return redirect()->intended('dashboard');
+            $user = Auth::user();
+            $token = $user->createToken('API Token')->plainTextToken;
+            return CustomResponse::response(CustomResponse::$success_array,'Login successfully.',false,[
+                'token'=>$token
+            ]);
         }
 
-        return back()->withErrors([
-            'error'=>'The provided credentials do not match our records. please go to register form if do not have an account yet.'
-        ]);
+        return CustomResponse::response(CustomResponse::$error_array,'The provided credentials do not match our records. please go to register form if do not have an account yet.',false);
     }
-    public function postRegister(Request $request){
-        $this->validator($request->all())->validate();
-
+    public function postRegister(Request $request)
+    {
+        $validator = $this->validator($request->all());
+    
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 200);
+        }
+    
         $user = $this->create($request->all());
-
+    
         Auth::login($user);
-
-        return response()->json();
-    }
+    
+        return CustomResponse::response(CustomResponse::$success_array,'Registrations successfully.',false);
+    }    
     protected function validator(array $data)
     {
         return Validator::make($data, [
@@ -53,6 +64,6 @@ class AuthController extends Controller
     }
     public function logout(){
         Auth::logout();
-        return redirect()->route('user.login');
+        return CustomResponse::response(CustomResponse::$success_array,'Logout successfully.',false);
     }
 }

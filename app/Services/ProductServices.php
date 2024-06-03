@@ -15,7 +15,7 @@ class ProductServices
     public function getAll($request){
         $data = [];
         if($request->filled('search')){
-            $data = $this->product->getAll($request->filled('search'));
+            $data = $this->product->getAll($request->search);
         }else{
          $data = $this->product->getAll();
         }
@@ -25,21 +25,21 @@ class ProductServices
         $validator = $this->checkInputProdutCreate($request);
         if($validator['status'] != 'success') return $validator;
 
-        $create = $this->product->create($request->name);
+        $create = $this->product->create($request);
         return $create;
     }
     public function editProduct($request){
         $validator = $this->checkInputProductEdit($request);
         if($validator['status'] != 'success') return $validator;
         $findProduct = $this->product::find($request->product_id);
-        $create = $findProduct->create($request);
+        $create = $findProduct->editRecord($request);
         return $create;
     }
     public function deleteProduct($request){
-        if(!is_array($request->id) || count($request->id)){
+        if(!is_array($request->id) || count($request->id) === 0){
             return false;
         }
-        $delete = $this->product->deleteRecord($request);
+        $delete = $this->product->deleteRecord($request->id);
         return $delete;
     }
     public function checkName($request){

@@ -65,7 +65,8 @@ class Product extends Model
         try {
             if (count($ids) > 0) {
                 $delete = $this->whereIn('id', $ids)->delete();
-                return (bool) $delete;
+                if($delete) return true;
+                return false;
             }
             return false;
         } catch (\Throwable $th) {
