@@ -18,16 +18,27 @@ use Illuminate\Support\Facades\Route;
 */
 Route::prefix('product')->group(function(){
     Route::middleware('auth:sanctum')->group(function () {
-        Route::get('/get-product-list',[ProductController::class,'getAll']);
+        Route::get('/get-product-list',function(Request $request){
+            $key = 'get-product-list';
+            return CacheApi::cacheApiResponse($key, function () use ($request) {
+                return app(ProductController::class)->getAll($request);
+            });
+        });
         Route::post('/create-product',[ProductController::class,'createProduct']);
         Route::post('/edit-product',[ProductController::class,'editProduct']);
         Route::delete('/delete-product',[ProductController::class,'deleteProduct']);
         Route::get('/check-name',[ProductController::class,'checkName']);
     });
 });
+
 Route::prefix('category')->group(function(){
     Route::middleware('auth:sanctum')->group(function () {
-        Route::get('/get-category-list',[CategoryController::class,'getAll']);
+        Route::get('/get-category-list',function(Request $request){
+            $key = 'get-category-list';
+            return CacheApi::cacheApiResponse($key, function () use ($request) {
+                return app(CategoryController::class)->getAll($request);
+            });
+        });
         Route::post('/create-category',[CategoryController::class,'createCate']);
         Route::post('/edit-category',[CategoryController::class,'editCate']);
         Route::delete('/delete-category',[CategoryController::class,'deleteCate']);
