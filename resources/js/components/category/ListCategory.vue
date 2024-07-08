@@ -4,7 +4,7 @@ import AdminVue from '../../layouts/Admin.vue'
 import axios from 'axios'
 import { NTable, NPagination,NButton,NInput, useMessage,NModal, useLoadingBar } from 'naive-ui'
 // Reactive variables
-const baseUrl = process.env.APP_URL + `/api/category/`;
+const baseUrl = import.meta.env.APP_URL + `/api/category/`;
 const data = ref([])
 const search = ref("")
 const id = ref([])
