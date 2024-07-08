@@ -4,7 +4,7 @@ import AdminVue from '../../layouts/Admin.vue'
 import axios from 'axios'
 import { NTable, NPagination,NButton,NInput, useMessage,NModal, useLoadingBar } from 'naive-ui'
 // Reactive variables
-const baseUrl = `http://127.0.0.1:8000/api/category/`
+const baseUrl = process.env.APP_URL + `/api/category/`;
 const data = ref([])
 const search = ref("")
 const id = ref([])
@@ -143,9 +143,7 @@ const handleSubmit = async ()=>{
     }
     formValue.value = {}
    } catch (error) {
-     console.log('====================================');
      console.log(error);
-     console.log('====================================');
    }
 }
 // Computed property for paginated data

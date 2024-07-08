@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, onMounted } from 'vue'
 import AdminVue from '../../layouts/Admin.vue'
 import axios from 'axios'
 import { useLoadingBar, useMessage } from 'naive-ui'
@@ -10,8 +10,8 @@ const page = ref(1)
 const pageSize = ref(5)
 const total = ref(0)
 const search = ref("")
-const baseUrl = `http://127.0.0.1:8000/api/product/`
-const baseUrlCate = `http://127.0.0.1:8000/api/category/`
+const baseUrl = process.env.APP_URL + `/api/product/`
+const baseUrlCate = process.env.APP_URL + `/api/category/`
 const showModal = ref(false)
 const message = useMessage();
 const id = ref([])
@@ -199,9 +199,7 @@ const handleSubmit = async ()=>{
     }
     formValue.value = {}
    } catch (error) {
-     console.log('====================================');
      console.log(error);
-     console.log('====================================');
    }
 }
 // Fetch data when the component is mounted
@@ -210,9 +208,6 @@ onMounted(() => {
   fetchDataCate('')
 })
 
-// Watch for changes in page and pageSize
-// watch(page, fetchData)
-// watch(pageSize, fetchData)
 </script>
 
 <template>
